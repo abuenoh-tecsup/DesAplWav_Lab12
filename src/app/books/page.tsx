@@ -156,9 +156,7 @@ export default function BooksPage() {
     });
 
     try {
-      const res = await fetch(
-        `/api/books/search?${params.toString()}`
-      );
+      const res = await fetch(`/api/books/search?${params.toString()}`);
 
       const json = await res.json();
 
@@ -197,6 +195,13 @@ export default function BooksPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Gestión de Libros</h1>
+
+      {/* CONTADOR DE RESULTADOS */}
+      <div className="text-sm text-gray-600">
+        {pagination.total > 0
+          ? `Mostrando ${books.length} de ${pagination.total} resultados`
+          : "0 resultados"}
+      </div>
 
       {/* MODAL EDITAR LIBRO */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
