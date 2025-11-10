@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  request: Request,
-  { params }: any
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const bookId = (await params).id;
+    const bookId = (await context.params).id;
 
     const book = await prisma.book.findUnique({
       where: { id: bookId },
@@ -35,12 +35,12 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // ✅ igual que en authors:
-    const { id: bookId } = await params;
+    const { id: bookId } = await context.params;
 
     const body = await request.json();
 
@@ -127,11 +127,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const bookId = (await params).id;
+    const bookId = (await context.params).id;
 
     await prisma.book.delete({
       where: { id: bookId },

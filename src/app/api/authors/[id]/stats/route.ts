@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { NextResponse } from "next/server";
@@ -6,10 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: any
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: authorId } = await params;
+    const { id: authorId } = await context.params;
 
     const author = await prisma.author.findUnique({
       where: { id: authorId },
