@@ -38,9 +38,11 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const bookId = (await params).id;
+    // ✅ igual que en authors:
+    const { id: bookId } = await params;
 
     const body = await request.json();
+
     const {
       title,
       description,
@@ -51,21 +53,22 @@ export async function PUT(
       authorId,
     } = body;
 
-    if (title && title.length < 3) {
+    // ✅ Tus validaciones, tal cual estaban:
+    if (title !== undefined && title.length < 3) {
       return NextResponse.json(
         { error: "El titulo debe tener al menos 3 carácteres" },
         { status: 400 }
       );
     }
 
-    if (pages && pages < 1) {
+    if (pages !== undefined && pages < 1) {
       return NextResponse.json(
         { error: "El número de páginas debe ser mayor a 0" },
         { status: 400 }
       );
     }
 
-    if (authorId) {
+    if (authorId !== undefined) {
       const authorExists = await prisma.author.findUnique({
         where: { id: authorId },
       });
@@ -77,22 +80,28 @@ export async function PUT(
       }
     }
 
+    // ✅ Tu misma construcción dinámica:
+    const data: Record<string, unknown> = {};
+
+    if (title !== undefined) data.title = title;
+    if (description !== undefined) data.description = description;
+    if (isbn !== undefined) data.isbn = isbn;
+    if (genre !== undefined) data.genre = genre;
+    if (authorId !== undefined) data.authorId = authorId;
+
+    if (publishedYear !== undefined) {
+      data.publishedYear =
+        publishedYear === "" ? null : parseInt(publishedYear);
+    }
+
+    if (pages !== undefined) {
+      data.pages = pages === "" ? null : parseInt(pages);
+    }
+
     const book = await prisma.book.update({
       where: { id: bookId },
-      data: {
-        title,
-        description,
-        isbn,
-        publishedYear: publishedYear
-          ? parseInt(publishedYear)
-          : undefined,
-        genre,
-        pages: pages ? parseInt(pages) : undefined,
-        authorId,
-      },
-      include: {
-        author: true,
-      },
+      data,
+      include: { author: true },
     });
 
     return NextResponse.json(book);

@@ -42,50 +42,33 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authorId = (await params).id;
+    const { id: authorId } = await params;
 
     const body = await request.json();
     const { name, email, bio, nationality, birthYear } = body;
 
-    if (email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return NextResponse.json({ error: "Email inválido" }, { status: 400 });
-      }
+    const data: any = {};
+
+    if (name !== undefined) data.name = name;
+    if (email !== undefined) data.email = email;
+    if (bio !== undefined) data.bio = bio;
+    if (nationality !== undefined) data.nationality = nationality;
+
+    if (birthYear !== undefined) {
+      data.birthYear =
+        birthYear === "" ? null : parseInt(birthYear);
     }
 
-    const author = await prisma.author.update({
+    const updated = await prisma.author.update({
       where: { id: authorId },
-      data: {
-        name,
-        email,
-        bio,
-        nationality,
-        birthYear: birthYear ? parseInt(birthYear) : null,
-      },
-      include: {
-        books: true,
-      },
+      data,
+      include: { books: true },
     });
 
-    return NextResponse.json(author);
+    return NextResponse.json(updated);
   } catch (error: any) {
-    if (error.code === "P2025") {
-      return NextResponse.json(
-        { error: "Autor no encontrado" },
-        { status: 404 }
-      );
-    }
-    if (error.code === "P2002") {
-      return NextResponse.json(
-        { error: "El email ya está registrado" },
-        { status: 409 }
-      );
-    }
-    return NextResponse.json(
-      { error: "Error al actualizar autor" },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ error: "Error al actualizar autor" }, { status: 500 });
   }
 }
 
